@@ -231,7 +231,7 @@ def video_feed():
 
 @app.route('/video_feed')
 def video_feed():
-    return Response(requests.get("http://<RPI_IP>:5001/video_feed").content, mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(requests.get("http://192.168.1.9:5001/video_feed").content, mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/logs')
 def get_logs():
