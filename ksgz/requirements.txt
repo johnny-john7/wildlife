@@ -1,0 +1,8 @@
+opencv-python
+numpy
+tensorflow
+librosa
+sounddevice
+simpleaudio
+flask
+ultralytics
