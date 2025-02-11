@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bird Detection System</title>
+  <style>
+    /* Center everything */
+    h1 {
+      margin-top: 100px;
+      margin-left: -130px;
+      color:#EFE3C2;
+    }
+     h2{
+      margin-left: 100px;
+      color:#EFE3C2;
+     }
+    body {
+      background-color: #3E7B27;
+      
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      margin-left: 500px;
+    }
+    
+    /* Adjust video position */
+    #video-container {
+      margin-left: -140px; /* Move video slightly to the left */
+    }
+
+    /* Center buttons */
+    #controls {
+      margin-top: 10px;
+      margin-left: 130px;
+    }
+
+    /* Button styling */
+    button {
+      
+      background-color: #123524; /* Blue background */
+      border: none;
+      color: #EFE3C2;
+      padding: 12px 24px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 10px 5px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: 0.3s;
+      
+    }
+
+    /* Scrollable log box styling */
+    .log-box {
+      width: 450px;      /* Same width as video container */
+      height: 200px;     /* Set height */
+      overflow-y: auto;  /* Enable vertical scrolling */
+      border: 1px solid black; /* Add border */
+      padding: 10px;
+      background-color: #f9f9f9; /* Light gray background */
+      margin-bottom: 20px;
+    }
+
+    .navbar {
+      overflow: hidden;
+      background-color: #123524;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 10px 0;
+    }
+    .navbar a {
+      float: left;
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 20px;
+      text-decoration: none;
+    }
+    .navbar a:hover {
+      background-color: #ddd;
+      color: black;
+    }
+  </style>
+  
+  <!-- Include jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  
+  <!-- Audio element for beep alert -->
+  <audio id="beep-sound" src="/static/beep.mp3"></audio>
+  
+  <script>
+    // Poll logs from the server every 2 seconds
+    function updateLogs() {
+      $.getJSON('/logs', function(data) {
+        // Update object logs
+        let objectLogDiv = $("#object_logs");
+        objectLogDiv.empty();
+        data.object_logs.forEach(function(log) {
+          // Each log is [timestamp, message, confidence]
+          objectLogDiv.append("<p>[" + log[0] + "] " + log[1] + " (Count: " + log[2] + ", Confidence: " + parseFloat(log[3]).toFixed(2) + ")</p>");
+
+        });
+
+        // Update bird logs
+        let birdLogDiv = $("#bird_logs");
+        birdLogDiv.empty();
+        data.bird_logs.forEach(function(log) {
+          // Each bird log is [timestamp, message]
+          birdLogDiv.append("<p>[" + log[0] + "] " + log[1] + "</p>");
+        });
+
+        // If the alert flag is true, play the beep sound.
+        if (data.alert) {
+          $("#beep-sound")[0].play();
+        }
+      });
+    }
+
+    // Start polling logs every 2 seconds.
+    setInterval(updateLogs, 2000);
+
+    $(document).ready(function(){
+      $("#start_video").click(function(){
+          $.post("/start_video", function(data){
+              console.log("Video:", data.status);
+          });
+      });
+      $("#stop_video").click(function(){
+          $.post("/stop_video", function(data){
+              console.log("Video:", data.status);
+          });
+      });
+      $("#start_audio").click(function(){
+          $.post("/start_audio", function(data){
+              console.log("Audio:", data.status);
+          });
+      });
+      $("#stop_audio").click(function(){
+          $.post("/stop_audio", function(data){
+              console.log("Audio:", data.status);
+          });
+      });
+    });
+  </script>
+</head>
+<body>
+  <div class="navbar">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+  </div>
+  
+  <h1>    </h1>
+  <h1>Wildlife Monitoring System and Poaching Detection</h1>
+  
+  <!-- Video Container -->
+  <div id="video-container">
+    <img id="video_feed" src="{{ url_for('video_feed') }}" width="800" height="500" alt="Video Feed">
+  </div>
+
+  <!-- Controls -->
+  <div id="controls">
+    <button id="start_video">Start Video</button>
+    <button id="stop_video">Stop Video</button>
+   
+    
+  </div>
+  
+  <!-- Object Logs (FIFO order) -->
+  <h2>wildlife monitoring Logs</h2>
+  <div id="object_logs" class="log-box">
+    <!-- Logs will be dynamically updated -->
+  </div>
+  <div id="controls">
+    
+    <button id="start_audio">Start Audio</button>
+    <button id="stop_audio">Stop Audio</button>
+    
+  </div>
+  <!-- Bird Logs (FIFO order) -->
+  <h2>Bird Sound Detection Logs</h2>
+  <div id="bird_logs" class="log-box">
+    <!-- Logs will be dynamically updated -->
+  </div>
+</body>
+</html>
